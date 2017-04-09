@@ -25,13 +25,11 @@ export {
     FusionChartsPipe
   ]
 })
-
-
 export class FusionChartsModule {
     static forRoot(fcCore: any, ...fcModules: any[]): ModuleWithProviders {
         return {
             ngModule: FusionChartsModule,
-            providers: [{ 
+            providers: [{
               provide: FusionChartsStatic,
               useValue: {
                   core: fcCore,

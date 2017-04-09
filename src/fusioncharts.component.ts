@@ -1,5 +1,5 @@
 import {Component, Input, ElementRef, OnInit,
-    OnChanges, DoCheck, AfterViewInit, OnDestroy,
+    OnChanges, DoCheck, OnDestroy,
     KeyValueDiffers, ViewChild} from '@angular/core';
 
 import { FusionChartsService } from './fusioncharts.service';
@@ -8,11 +8,10 @@ import { FusionChartsConstructor } from './fusioncharts.constructor';
 
 @Component({
     selector: 'fusioncharts',
-    template: `<div attr.id="container-{{containerId}}" >FusionCharts will render here</div>
-    `,
+    template: `<div>FusionCharts will render here</div>`,
     providers: [FusionChartsService],
 })
-export class FusionChartsComponent implements OnInit, OnChanges, DoCheck, AfterViewInit, OnDestroy {
+export class FusionChartsComponent implements OnInit, OnChanges, DoCheck, OnDestroy {
 
     chartObj: any;
 
@@ -149,6 +148,36 @@ export class FusionChartsComponent implements OnInit, OnChanges, DoCheck, AfterV
 
     ngOnInit() {
         this.oldDataSource = JSON.stringify(this.dataSource);
+        let _this = this,
+            // element = _this.element.nativeElement,
+            _chartConfig:any = _this.chartConfig || {},
+            params = _this.constructerParams,
+            configObj = _this.configObj || (_this.configObj = {});
+
+
+        if (typeof _chartConfig === 'string') {
+            _chartConfig = JSON.parse(_chartConfig);
+        }
+
+        for (let i of Object.keys(params)) {
+            let value = _this[i] || _chartConfig[i];
+            if (value) {
+                configObj[i] = value;
+            }
+        }
+
+        if (configObj['type']) {
+
+            _this.chartObj = FusionChartsConstructor(_this.fusionchartsService, configObj);
+
+            configObj['renderAt'] = this.element.nativeElement;
+            _this.containerId = _this.chartObj.id;
+
+            setTimeout(() => {
+                _this.chartObj.render(_this.configObj['renderAt']);
+            }, 1);
+
+        }
     }
 
 
@@ -208,43 +237,8 @@ export class FusionChartsComponent implements OnInit, OnChanges, DoCheck, AfterV
         }
     }
 
-
-    ngAfterViewInit() {
-        let _this = this,
-            // element = _this.element.nativeElement,
-            _chartConfig:any = _this.chartConfig || {},
-            params = _this.constructerParams,
-            configObj = _this.configObj || (_this.configObj = {});
-
-
-        if (typeof _chartConfig === 'string') {
-            _chartConfig = JSON.parse(_chartConfig);
-        }
-
-        for (let i of Object.keys(params)) {
-            let value = _this[i] || _chartConfig[i];
-            if (value) {
-                configObj[i] = value;
-            }
-        }
-
-        if (configObj['type']) {
-
-            _this.chartObj = FusionChartsConstructor(_this.fusionchartsService, configObj);
-
-            configObj['renderAt'] = 'container-' + _this.chartObj.id;
-            _this.containerId = _this.chartObj.id;
-
-            setTimeout(() => {
-                _this.chartObj.render(_this.configObj['renderAt']);
-            }, 1);
-
-        }
-    }
-
     ngOnDestroy() {
         this.chartObj.dispose();
     }
 
 }
-
